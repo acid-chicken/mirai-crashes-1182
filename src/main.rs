@@ -1,35 +1,3 @@
-#![allow(dead_code)]
-
-macro_rules! strip_leading_plus {
-    (+ $($rest: tt)*) => {
-        $($rest)*
-    }
-}
-
-macro_rules! as_result_of_nonzero_enum_optional {
-    (@step $($current: literal)+, $source: ident | $error: expr, $value: expr) => {
-        if $source == strip_leading_plus!($(+ $current)+) {
-            Ok(Some($value))
-        } else {
-            Err($error)
-        }
-    };
-    (@step $($current: literal)+, $source: ident | $error: expr, $value: expr, $($rest: expr),*) => {
-        if $source == strip_leading_plus!($(+ $current)+) {
-            Ok(Some($value))
-        } else {
-            as_result_of_nonzero_enum_optional!(@step 1 $($current)+, $source | $error, $($rest),*)
-        }
-    };
-    ($source: ident | $error: expr => $($value: expr),+) => {
-        if $source == 0 {
-            Ok(None)
-        } else {
-            as_result_of_nonzero_enum_optional!(@step 1, $source | $error, $($value),+)
-        }
-    }
-}
-
 #[derive(Debug)]
 pub enum Error {
     InputFailed,
@@ -46,7 +14,13 @@ pub enum NonZeroEnum {
 
 impl NonZeroEnum {
     pub fn try_from_optional(source: u8) -> Result<Option<Self>, Error> {
-        as_result_of_nonzero_enum_optional!(source | Error::UnknownValue => NonZeroEnum::One, NonZeroEnum::Two, NonZeroEnum::Three)
+        match source {
+            0 => Ok(None),
+            1 => Ok(Some(NonZeroEnum::One)),
+            2 => Ok(Some(NonZeroEnum::Two)),
+            3 => Ok(Some(NonZeroEnum::Three)),
+            _ => Err(Error::UnknownValue),
+        }
     }
 }
 
