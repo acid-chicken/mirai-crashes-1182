@@ -24,11 +24,6 @@ impl NonZeroEnum {
     }
 }
 
-#[derive(Debug)]
-pub struct Container {
-    pub value: Option<NonZeroEnum>,
-}
-
 fn main() {
     let mut input = String::new();
     match std::io::stdin().read_line(&mut input).or(Err(Error::InputFailed))
